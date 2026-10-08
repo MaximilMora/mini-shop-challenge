@@ -1,6 +1,10 @@
 import { formatPrice } from '../utils/formatPrice.js';
+import { useCart } from '../context/CartContext.jsx';
 
 export default function ProductCard({ product }) {
+  const { addItem, quantityOf } = useCart();
+  const atLimit = quantityOf(product.id) >= product.stock;
+
   return (
     <article className="card">
       <div className="card-image" aria-hidden="true">{product.emoji}</div>
@@ -12,7 +16,9 @@ export default function ProductCard({ product }) {
           {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
         </span>
       </div>
-      {/* TODO: "Add to cart" button */}
+      <button disabled={atLimit} onClick={() => addItem(product)}>
+        {product.stock === 0 ? 'Out of stock' : atLimit ? 'Max in cart' : 'Add to cart'}
+      </button>
     </article>
   );
 }

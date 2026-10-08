@@ -1,8 +1,8 @@
-import { useProducts } from '../hooks/useProducts.js';
+import { useProductsContext } from '../context/ProductsContext.jsx';
 import ProductCard from './ProductCard.jsx';
 
 export default function ProductList() {
-  const { products, loading, error } = useProducts();
+  const { products, loading, error } = useProductsContext();
 
   if (loading) return <p className="muted">Loading products…</p>;
   if (error) return <p className="error">Could not load products: {error}</p>;

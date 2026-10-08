@@ -83,6 +83,30 @@ h1, h2, h3 { margin: 0; }
 
 .cart { position: sticky; top: 80px; }
 .cart h2 { font-size: 1.1rem; }
+.cart-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cart-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.cart-item:last-child { padding-bottom: 0; border-bottom: none; }
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
 
 button {
   font: inherit;
