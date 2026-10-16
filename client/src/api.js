@@ -16,3 +16,11 @@ async function request(path, { method = 'GET', body } = {}) {
 export function fetchProducts() {
   return request('/products');
 }
+
+export function fetchCart() {
+  return request('/cart');
+}
+
+export function addCartItem(productId, quantity = 1) {
+  return request('/cart/items', { method: 'POST', body: { productId, quantity } });
+}

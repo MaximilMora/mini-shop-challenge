@@ -1,55 +1,44 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-
-const STORAGE_KEY = 'mini-shop-cart';
+import { addCartItem, fetchCart } from '../api.js';
 
 const CartContext = createContext(null);
 
-function readStoredItems() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
 /**
- * The cart is stored as [{ productId, quantity }], in the order products were first added.
- * Names and prices are not duplicated here: they are read from the catalogue when rendering.
+ * The server owns the cart. Every mutation answers with the whole cart,
+ * so there is nothing to recompute here beyond the badge count.
  */
 export function CartProvider({ children }) {
-  const [items, setItems] = useState(readStoredItems);
+  const [cart, setCart] = useState({ items: [], totalCents: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+    let cancelled = false;
+    fetchCart()
+      .then((data) => { if (!cancelled) setCart(data); })
+      .catch((err) => { if (!cancelled) setError(err.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
-  const addItem = useCallback((product, quantity = 1) => {
-    setItems((current) => {
-      const line = current.find((item) => item.productId === product.id);
-      const nextQuantity = (line?.quantity ?? 0) + quantity;
-      if (nextQuantity > product.stock) return current;
-
-      if (!line) return [...current, { productId: product.id, quantity: nextQuantity }];
-      return current.map((item) =>
-        item.productId === product.id ? { ...item, quantity: nextQuantity } : item
-      );
-    });
+  // Errors are left to propagate so the card that fired the request can show them.
+  const addItem = useCallback(async (productId, quantity) => {
+    setCart(await addCartItem(productId, quantity));
   }, []);
 
   const quantityOf = useCallback(
-    (productId) => items.find((item) => item.productId === productId)?.quantity ?? 0,
-    [items]
+    (productId) => cart.items.find((item) => item.productId === productId)?.quantity ?? 0,
+    [cart]
   );
 
   const totalUnits = useMemo(
-    () => items.reduce((sum, item) => sum + item.quantity, 0),
-    [items]
+    () => cart.items.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
   );
 
   const value = useMemo(
-    () => ({ items, addItem, quantityOf, totalUnits }),
-    [items, addItem, quantityOf, totalUnits]
+    () => ({ ...cart, loading, error, addItem, quantityOf, totalUnits }),
+    [cart, loading, error, addItem, quantityOf, totalUnits]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

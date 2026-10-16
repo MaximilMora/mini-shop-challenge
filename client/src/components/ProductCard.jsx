@@ -1,8 +1,10 @@
 import { formatPrice } from '../utils/formatPrice.js';
 import { useCart } from '../context/CartContext.jsx';
+import { useAsyncAction } from '../hooks/useAsyncAction.js';
 
 export default function ProductCard({ product }) {
   const { addItem, quantityOf } = useCart();
+  const { run, pending, error } = useAsyncAction(addItem);
   const atLimit = quantityOf(product.id) >= product.stock;
 
   return (
@@ -16,9 +18,13 @@ export default function ProductCard({ product }) {
           {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
         </span>
       </div>
-      <button disabled={atLimit} onClick={() => addItem(product)}>
-        {product.stock === 0 ? 'Out of stock' : atLimit ? 'Max in cart' : 'Add to cart'}
+      <button disabled={atLimit || pending} onClick={() => run(product.id)}>
+        {product.stock === 0 ? 'Out of stock'
+          : pending ? 'Adding…'
+          : atLimit ? 'Max in cart'
+          : 'Add to cart'}
       </button>
+      {error && <p className="error small">{error}</p>}
     </article>
   );
 }
