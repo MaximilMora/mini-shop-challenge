@@ -32,6 +32,16 @@ export function openDb(filename) {
     );
   `);
 
+  // There is a single cart, so one row per product is enough. The autoincrement id keeps the
+  // order in which products were first added, and the unique product_id keeps one line per product.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS cart_items (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL UNIQUE REFERENCES products(id),
+      quantity   INTEGER NOT NULL CHECK (quantity > 0)
+    );
+  `);
+
   const { count } = db.prepare('SELECT COUNT(*) AS count FROM products').get();
   if (count === 0) {
     const insert = db.prepare(
