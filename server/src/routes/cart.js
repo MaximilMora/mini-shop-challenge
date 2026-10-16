@@ -52,7 +52,7 @@ export function cartRouter(db) {
       return res.status(409).json({
         error: product.stock === 0
           ? `${product.name} is out of stock`
-          : `Only ${product.stock} units of ${product.name} are available`,
+          : `${product.name}: only ${product.stock} in stock`,
       });
     }
 
