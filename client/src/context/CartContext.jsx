@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { addCartItem, fetchCart } from '../api.js';
+import { addCartItem, fetchCart, removeCartItem } from '../api.js';
 
 const CartContext = createContext(null);
 
@@ -21,9 +21,13 @@ export function CartProvider({ children }) {
     return () => { cancelled = true; };
   }, []);
 
-  // Errors are left to propagate so the card that fired the request can show them.
+  // Errors are left to propagate so the component that fired the request can show them.
   const addItem = useCallback(async (productId, quantity) => {
     setCart(await addCartItem(productId, quantity));
+  }, []);
+
+  const removeItem = useCallback(async (productId) => {
+    setCart(await removeCartItem(productId));
   }, []);
 
   const quantityOf = useCallback(
@@ -37,8 +41,8 @@ export function CartProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ ...cart, loading, error, addItem, quantityOf, totalUnits }),
-    [cart, loading, error, addItem, quantityOf, totalUnits]
+    () => ({ ...cart, loading, error, addItem, removeItem, quantityOf, totalUnits }),
+    [cart, loading, error, addItem, removeItem, quantityOf, totalUnits]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

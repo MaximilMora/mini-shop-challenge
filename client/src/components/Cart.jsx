@@ -1,5 +1,6 @@
 import { useCart } from '../context/CartContext.jsx';
 import { formatPrice } from '../utils/formatPrice.js';
+import CartItem from './CartItem.jsx';
 
 export default function Cart() {
   const { items, totalCents, loading, error } = useCart();
@@ -15,13 +16,7 @@ export default function Cart() {
         <>
           <ul className="cart-items">
             {items.map((item) => (
-              <li key={item.productId} className="cart-item">
-                <span>{item.emoji} {item.name}</span>
-                <strong>{formatPrice(item.lineTotalCents)}</strong>
-                <span className="muted small">
-                  {formatPrice(item.priceCents)} × {item.quantity}
-                </span>
-              </li>
+              <CartItem key={item.productId} item={item} />
             ))}
           </ul>
           <p className="cart-total">

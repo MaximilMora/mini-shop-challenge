@@ -99,6 +99,8 @@ h1, h2, h3 { margin: 0; }
   border-bottom: 1px solid var(--border);
 }
 .cart-item:last-child { padding-bottom: 0; border-bottom: none; }
+.cart-item button { justify-self: end; padding: 2px 8px; font-weight: 500; }
+.cart-item .error { grid-column: 1 / -1; }
 .cart-total {
   display: flex;
   justify-content: space-between;

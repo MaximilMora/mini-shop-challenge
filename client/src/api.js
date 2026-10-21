@@ -24,3 +24,7 @@ export function fetchCart() {
 export function addCartItem(productId, quantity = 1) {
   return request('/cart/items', { method: 'POST', body: { productId, quantity } });
 }
+
+export function removeCartItem(productId) {
+  return request(`/cart/items/${productId}`, { method: 'DELETE' });
+}
