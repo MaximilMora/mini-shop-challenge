@@ -21,13 +21,18 @@ export function CartProvider({ children }) {
     return () => { cancelled = true; };
   }, []);
 
-  // Errors are left to propagate so the component that fired the request can show them.
+  // A successful mutation replaces the cart, so a stale load failure no longer applies.
+  // Thrown errors still propagate so the component that fired the request can show them.
   const addItem = useCallback(async (productId, quantity) => {
-    setCart(await addCartItem(productId, quantity));
+    const next = await addCartItem(productId, quantity);
+    setCart(next);
+    setError(null);
   }, []);
 
   const removeItem = useCallback(async (productId) => {
-    setCart(await removeCartItem(productId));
+    const next = await removeCartItem(productId);
+    setCart(next);
+    setError(null);
   }, []);
 
   const quantityOf = useCallback(
