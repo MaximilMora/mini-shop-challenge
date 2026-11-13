@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { addCartItem, fetchCart, removeCartItem } from '../api.js';
+import { addCartItem, decreaseCartItem, fetchCart } from '../api.js';
 
 const CartContext = createContext(null);
 
@@ -21,6 +21,20 @@ export function CartProvider({ children }) {
     return () => { cancelled = true; };
   }, []);
 
+  // Other tabs/clients see the same global cart; available stock on cards follows quantityOf.
+  useEffect(() => {
+    const source = new EventSource('/api/events');
+    source.addEventListener('cart:updated', (event) => {
+      try {
+        setCart(JSON.parse(event.data));
+        setError(null);
+      } catch {
+        // Ignore malformed payloads; the next mutation or reload recovers.
+      }
+    });
+    return () => source.close();
+  }, []);
+
   // A successful mutation replaces the cart, so a stale load failure no longer applies.
   // Thrown errors still propagate so the component that fired the request can show them.
   const addItem = useCallback(async (productId, quantity) => {
@@ -30,7 +44,7 @@ export function CartProvider({ children }) {
   }, []);
 
   const removeItem = useCallback(async (productId) => {
-    const next = await removeCartItem(productId);
+    const next = await decreaseCartItem(productId);
     setCart(next);
     setError(null);
   }, []);

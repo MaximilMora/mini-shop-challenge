@@ -28,3 +28,8 @@ export function addCartItem(productId, quantity = 1) {
 export function removeCartItem(productId) {
   return request(`/cart/items/${productId}`, { method: 'DELETE' });
 }
+
+/** Removes one unit from a cart line (deletes the line when quantity hits 0). */
+export function decreaseCartItem(productId) {
+  return request(`/cart/items/${productId}`, { method: 'PATCH' });
+}
