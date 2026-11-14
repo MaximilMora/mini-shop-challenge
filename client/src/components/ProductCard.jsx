@@ -1,4 +1,5 @@
 import { formatPrice } from '../utils/formatPrice.js';
+import { availableStock } from '../utils/cartMath.js';
 import { useCart } from '../context/CartContext.jsx';
 import { useAsyncAction } from '../hooks/useAsyncAction.js';
 
@@ -6,7 +7,7 @@ export default function ProductCard({ product }) {
   const { addItem, quantityOf } = useCart();
   const { run, pending, error } = useAsyncAction(addItem);
   // Visible stock = catalogue ceiling minus units already reserved in the (global) cart.
-  const available = product.stock - quantityOf(product.id);
+  const available = availableStock(product.stock, quantityOf(product.id));
   const atLimit = available <= 0;
 
   return (

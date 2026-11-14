@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { addCartItem, decreaseCartItem, fetchCart } from '../api.js';
+import { quantityOf as quantityInItems, totalUnits as sumUnits } from '../utils/cartMath.js';
 
 const CartContext = createContext(null);
 
@@ -50,12 +51,12 @@ export function CartProvider({ children }) {
   }, []);
 
   const quantityOf = useCallback(
-    (productId) => cart.items.find((item) => item.productId === productId)?.quantity ?? 0,
+    (productId) => quantityInItems(cart.items, productId),
     [cart]
   );
 
   const totalUnits = useMemo(
-    () => cart.items.reduce((sum, item) => sum + item.quantity, 0),
+    () => sumUnits(cart.items),
     [cart]
   );
 
