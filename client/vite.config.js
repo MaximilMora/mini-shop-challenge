@@ -6,6 +6,12 @@ export default defineConfig({
   server: {
     port: 5173,
     // Requests to /api/* are forwarded to the Express server, so the client can call fetch('/api/...').
-    proxy: { '/api': 'http://localhost:3001' },
+    // Object form keeps SSE streams open (no buffering) for GET /api/events.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
   },
 });

@@ -27,7 +27,7 @@ function isPositiveInt(value) {
   return Number.isInteger(value) && value > 0;
 }
 
-export function cartRouter(db) {
+export function cartRouter(db, hub) {
   const router = Router();
 
   router.get('/', (req, res) => {
@@ -61,7 +61,28 @@ export function cartRouter(db) {
       ON CONFLICT(product_id) DO UPDATE SET quantity = quantity + excluded.quantity
     `).run(productId, quantity);
 
-    res.status(201).json(getCart(db));
+    const cart = getCart(db);
+    hub.broadcast('cart:updated', cart);
+    res.status(201).json(cart);
+  });
+
+  // Decrements one unit; removes the line when quantity would hit zero.
+  router.patch('/items/:productId', (req, res) => {
+    const productId = Number(req.params.productId);
+    if (!isPositiveInt(productId)) return res.status(404).json({ error: 'Product not in cart' });
+
+    const line = db.prepare('SELECT quantity FROM cart_items WHERE product_id = ?').get(productId);
+    if (!line) return res.status(404).json({ error: 'Product not in cart' });
+
+    if (line.quantity <= 1) {
+      db.prepare('DELETE FROM cart_items WHERE product_id = ?').run(productId);
+    } else {
+      db.prepare('UPDATE cart_items SET quantity = quantity - 1 WHERE product_id = ?').run(productId);
+    }
+
+    const cart = getCart(db);
+    hub.broadcast('cart:updated', cart);
+    res.json(cart);
   });
 
   router.delete('/items/:productId', (req, res) => {
@@ -71,7 +92,9 @@ export function cartRouter(db) {
     const { changes } = db.prepare('DELETE FROM cart_items WHERE product_id = ?').run(productId);
     if (Number(changes) === 0) return res.status(404).json({ error: 'Product not in cart' });
 
-    res.json(getCart(db));
+    const cart = getCart(db);
+    hub.broadcast('cart:updated', cart);
+    res.json(cart);
   });
 
   return router;

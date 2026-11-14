@@ -19,11 +19,11 @@ export default function CartItem({ item }) {
       </span>
       <button
         className="secondary small"
-        aria-label={`Remove ${item.name}`}
+        aria-label={`Remove one ${item.name}`}
         disabled={pending}
         onClick={() => run(item.productId)}
       >
-        {pending ? 'Removing…' : 'Remove'}
+        {pending ? 'Removing…' : '−'}
       </button>
       {error && <p className="error small">{error}</p>}
     </li>
